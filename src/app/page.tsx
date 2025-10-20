@@ -69,9 +69,9 @@ export default function Home() {
             ))}
           </nav>
           <div className="hidden md:flex items-center gap-4 min-w-max">
-            <button className="text-md cursor-pointer bg-gradient-to-r from-blue-500 to-blue-800 text-white px-4 py-1.5 rounded-full hover:bg-blue-700 transition">
+            <Link href={'/login'} className="text-md cursor-pointer bg-gradient-to-r from-blue-500 to-blue-800 text-white px-4 py-1.5 rounded-full hover:bg-blue-700 transition">
               login / register
-            </button>
+            </Link>
           </div>
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
@@ -131,10 +131,10 @@ export default function Home() {
 
             {/* Menu Footer */}
             <div className="p-4 border-t border-gray-200">
-              <button className="w-full text-md cursor-pointer bg-gradient-to-r from-blue-500 to-blue-800 text-white px-4 py-3 rounded-lg hover:opacity-90 transition-opacity duration-200 flex items-center justify-center gap-2">
+              <Link href={'/login'} className="w-full text-md cursor-pointer bg-gradient-to-r from-blue-500 to-blue-800 text-white px-4 py-3 rounded-lg hover:opacity-90 transition-opacity duration-200 flex items-center justify-center gap-2">
                 <LogIn className="h-5 w-5" />
                 <span>Login / Register</span>
-              </button>
+              </Link>
             </div>
           </div>
         </div>
