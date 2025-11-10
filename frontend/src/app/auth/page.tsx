@@ -1,5 +1,5 @@
 "use client";
-import { CreateAccountIcon, EmailIcon, FacebookIcon, GoogleIcon, PasswordIcon, SignInIcon, UserIcon } from "@/lib/icons";
+import { CreateAccountIcon, EmailIcon, FacebookIcon, GoogleIcon, PasswordIcon, SignInIcon, UserIcon } from "../../lib/icons";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";

@@ -22,7 +22,7 @@ import {
   featureLinks,
   featuresData,
   stepsData,
-} from "@/lib/data";
+} from "../lib/data";
 import Link from "next/link";
 
 const navLinks = [

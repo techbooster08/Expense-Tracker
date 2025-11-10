@@ -1,6 +1,6 @@
 // app/page.tsx
 import React from 'react';
-import CashbookCard from '@/components/CashbookCard';
+import CashbookCard from '../../../../components/CashbookCard';
 import {
   Plus,
   Book,
@@ -65,9 +65,9 @@ const cashbookData = [
 // --- Page Component ---
 export default function CashbooksPage() {
   return (
-    <div className={`flex min-h-screen ${inter.variable} font-sans`}>
+    <div className={`flex min-h-screen  ${inter.variable} overflow-hidden font-sans mt-15`}>
       {/* ===== Sidebar ===== */}
-      <aside className="w-[260px] bg-white p-6 border-r border-gray-200 hidden md:block">
+      <aside className="w-[260px] bg-white p-6 border-r h-screen  border-gray-200 hidden md:block">
         <button className="flex items-center justify-center gap-2 w-full bg-blue-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-opacity-90 transition-colors">
           <Plus size={18} /> Create New Book
         </button>
@@ -102,7 +102,7 @@ export default function CashbooksPage() {
       </aside>
 
       {/* ===== Main Content ===== */}
-      <main className="flex-1 p-6 md:p-10 relative">
+      <main className="flex-1 h-full overflow-y-scroll  p-6 md:p-10 relative">
         <header>
           <h1 className="text-3xl font-bold text-gray-900">My Expense Books</h1>
           <p className="text-base text-gray-500 mt-1">
