@@ -2,6 +2,7 @@
 import React from 'react';
 // Import Lucid icons
 import { Star, MoreVertical } from 'lucide-react';
+import Link from 'next/link';
 
 interface CashbookCardProps {
   title: string;
@@ -47,7 +48,7 @@ const CashbookCard: React.FC<CashbookCardProps> = ({
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-gray-800 mb-6">{title}</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-6 hover:text-blue-600"><Link href={"/home/cashbooks/1"}> {title}</Link></h3>
 
       {/* Card Stats */}
       <div className="space-y-3">

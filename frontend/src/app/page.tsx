@@ -48,8 +48,8 @@ export default function Home() {
     <>
       {/* nav bar */}
       <header className="w-full fixed top-0 z-50 bg-white shadow-sm">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <div className="flex items-center gap-2 min-w-max">
+        <div className="mx-auto px-4  flex items-center justify-between h-16">
+          <div className="flex items-center gap-2 ">
             <Image
               src={"/logo-expense-tracker.png"}
               alt="logo"
@@ -57,7 +57,7 @@ export default function Home() {
               width={200}
             />
           </div>
-          <nav className="hidden md:flex flex-1 items-center justify-center gap-6 text-sm text-gray-700 relative">
+          <nav className="hidden md:flex flex-1 items-center justify-center gap-6 text-lg text-gray-700 relative">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
