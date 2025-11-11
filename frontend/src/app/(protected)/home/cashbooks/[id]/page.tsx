@@ -20,6 +20,7 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
 } from 'lucide-react';
+import Link from 'next/link';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -203,12 +204,12 @@ export default function CashbookViewPage() {
         {/* Page Header */}
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <a
+            <Link
               href="/home/cashbooks" // Link back to dashboard
               className="p-2 rounded-full text-gray-500 hover:bg-gray-200"
             >
               <ArrowLeft size={20} />
-            </a>
+            </Link>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
                 November Expenses
