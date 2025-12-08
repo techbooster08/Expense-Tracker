@@ -17,7 +17,9 @@ app.use(cookieParser());
 
 // for managing Cors policy
 const allowedOrigins = [
-    'http://localhost:3000/',
+    'http://localhost:3000',
+    'http://localhost:2008',
+
 ]; 
 
 const corsOptions = {

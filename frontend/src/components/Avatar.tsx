@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { User, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
+import api from "@/app/services/api";
+import toast from "react-hot-toast";
 
 const Avatar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,6 +29,14 @@ const Avatar = () => {
     };
   }, []);
 
+  const habdleLogout = async ()=>{
+    await api.post("/auth/logout");
+    toast.success("Logout Successful", {
+      duration: 4000,
+    });
+    window.location.href = "/auth";
+  }
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -44,13 +54,13 @@ const Avatar = () => {
             <Settings size={16} />
             Settings
           </Link>
-          <Link
-            href="/"
+          <button
+          onClick={habdleLogout}
             className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
           >
             <LogOut size={16} />
             Logout
-          </Link>
+          </button>
         </div>
       )}
     </div>

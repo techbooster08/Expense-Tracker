@@ -1,0 +1,22 @@
+import jwt from 'jsonwebtoken';
+
+
+export const getUser = async (req,res) =>{
+    try {
+        console.log(req.cookies.token);
+        
+        const token = req.cookies.token; // Read JWT from HTTP-only cookie
+        if (!token) return res.status(401).json({ message: "Not authenticated" });
+    
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY); // Decode JWT
+        console.log(decoded);
+        
+        res.json({ user: {
+          id: decoded.id,
+          full_name: decoded.full_name,
+          email: decoded.email,
+        }, message : "User is Authorized! | Session is Active!" }); // Send decoded user info to frontend
+      } catch (error) {
+        res.status(401).json({ message: "Invalid token | Session Expired!" });
+      }
+}
