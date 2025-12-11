@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { decodeToken } from "../helper/jwt.helper.js";
 
 export const getUser = async (req, res) => {
   try {
@@ -6,7 +7,7 @@ export const getUser = async (req, res) => {
      
     if (!token) return res.status(401).json({ message: "Not authenticated" });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY); // Decode JWT
+    const decoded = await decodeToken(token); // Decode JWT
     res.status(200).json({
       user: {
         id: decoded.id,

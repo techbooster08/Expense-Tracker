@@ -1,6 +1,6 @@
 import db from "../config/db.config.js";
-import jwt from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
+import { createToken } from "../helper/jwt.helper.js";
 
 export const register = async (req, res) => {
   try {
@@ -58,15 +58,11 @@ export const login = async (req, res) => {
         // send response if pasword is corect
 
         // Generate JWT Token
-        const token = jwt.sign(
-          {
+        const token = await createToken({
             id: user.id,
             full_name: user.full_name,
             email: user.email,
-          },
-          process.env.JWT_SECRET_KEY,
-          { expiresIn: "1h" }
-        );
+          });
 
         res.status(200).json({
           message: "Login successful",
