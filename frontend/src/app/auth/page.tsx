@@ -1,174 +1,234 @@
 "use client";
-import { CreateAccountIcon, EmailIcon, FacebookIcon, GoogleIcon, PasswordIcon, SignInIcon, UserIcon } from "../../lib/icons";
+import {
+  CreateAccountIcon,
+  EmailIcon,
+  FacebookIcon,
+  GoogleIcon,
+  PasswordIcon,
+  SignInIcon,
+  UserIcon,
+} from "../../lib/icons";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
+import api from "../services/api";
 
 // --- Form Components ---
-const LoginForm: React.FC = () => (
-  <form className="space-y-6">
-    <div>
-      <label className="text-sm font-medium text-gray-700" htmlFor="email">
-        Email Address
-      </label>
-      <div className="mt-1 relative rounded-md shadow-sm">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <EmailIcon />
-        </div>
-        <input
-          type="email"
-          name="email"
-          id="email"
-          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Enter your email"
-        />
-      </div>
-    </div>
-    <div>
-      <label className="text-sm font-medium text-gray-700" htmlFor="password">
-        Password
-      </label>
-      <div className="mt-1 relative rounded-md shadow-sm">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <PasswordIcon />
-        </div>
-        <input
-          type="password"
-          name="password"
-          id="password"
-          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Enter your password"
-        />
-      </div>
-    </div>
-    <div className="flex items-center justify-between">
-      <div className="flex items-center">
-        <input
-          id="remember-me"
-          name="remember-me"
-          type="checkbox"
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-        />
-        <label
-          htmlFor="remember-me"
-          className="ml-2 block text-sm text-gray-900"
-        >
-          Remember me
-        </label>
-      </div>
-      <div className="text-sm">
-        <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-          Forgot password?
-        </a>
-      </div>
-    </div>
-    <div>
-      <button
-        type="submit"
-        onClick={(e)=>{
-          e.preventDefault();
+const LoginForm: React.FC = () => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    try {
+          const res = await api.post("/auth/login", {
+            email: data.get("email"),
+            password: data.get("password"),
+          });
+          localStorage.setItem("token", res.data.token);
+          toast.success("Login Successful", {
+            duration: 4000,
+          });
           window.location.href = "/home/cashbooks";
-        }}
-        className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300"
-      >
-        <SignInIcon />
-        Sign In
-      </button>
-    </div>
-  </form>
-);
+      
+    } catch (err) {
+      toast.error("Login Failed!", {
+        duration: 4000,
+      });
+      console.log(err);
+    }
+  };
 
-const RegisterForm: React.FC = () => (
-  <form className="space-y-4">
-    <div>
-      <label className="text-sm font-medium text-gray-700" htmlFor="fullname">
-        Full Name
-      </label>
-      <div className="mt-1 relative rounded-md shadow-sm">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <UserIcon />
+  return (
+    <form className="space-y-6" onSubmit={handleSubmit}>
+      <div>
+        <label className="text-sm font-medium text-gray-700" htmlFor="email">
+          Email Address
+        </label>
+        <div className="mt-1 relative rounded-md shadow-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <EmailIcon />
+          </div>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            required
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Enter your email"
+          />
         </div>
-        <input
-          type="text"
-          name="fullname"
-          id="fullname"
-          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Enter your full name"
-        />
       </div>
-    </div>
-    <div>
-      <label className="text-sm font-medium text-gray-700" htmlFor="reg-email">
-        Email Address
-      </label>
-      <div className="mt-1 relative rounded-md shadow-sm">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <EmailIcon />
+      <div>
+        <label className="text-sm font-medium text-gray-700" htmlFor="password">
+          Password
+        </label>
+        <div className="mt-1 relative rounded-md shadow-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <PasswordIcon />
+          </div>
+          <input
+            type="password"
+            name="password"
+            id="password"
+            required
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Enter your password"
+          />
         </div>
-        <input
-          type="email"
-          name="reg-email"
-          id="reg-email"
-          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Enter your email"
-        />
       </div>
-    </div>
-    <div>
-      <label
-        className="text-sm font-medium text-gray-700"
-        htmlFor="reg-password"
-      >
-        Password
-      </label>
-      <div className="mt-1 relative rounded-md shadow-sm">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <PasswordIcon />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <input
+            id="remember-me"
+            name="remember-me"
+            type="checkbox"
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label
+            htmlFor="remember-me"
+            className="ml-2 block text-sm text-gray-900"
+          >
+            Remember me
+          </label>
         </div>
-        <input
-          type="password"
-          name="reg-password"
-          id="reg-password"
-          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Enter your password"
-        />
-      </div>
-    </div>
-    <div>
-      <label
-        className="text-sm font-medium text-gray-700"
-        htmlFor="confirm-password"
-      >
-        Confirm Password
-      </label>
-      <div className="mt-1 relative rounded-md shadow-sm">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <PasswordIcon />
+        <div className="text-sm">
+          <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+            Forgot password?
+          </a>
         </div>
-        <input
-          type="password"
-          name="confirm-password"
-          id="confirm-password"
-          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Confirm your password"
-        />
       </div>
-    </div>
-    <div className="pt-2">
-      <button
-        type="submit"
-        onClick={(e)=>{
-          e.preventDefault();
-          window.location.href = "/home/cashbooks";
-        }}
-        className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300"
-      >
-        <CreateAccountIcon />
-        Create Account
-      </button>
-    </div>
-  </form>
-);
+      <div>
+        <button
+          type="submit"
+          className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300"
+        >
+          <SignInIcon />
+          Sign In
+        </button>
+      </div>
+    </form>
+  );
+};
+
+const RegisterForm: React.FC = () => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    console.log(data);
+
+    try {
+      const res = await api.post("/auth/register", {
+        full_name: data.get("fullname"),
+        email: data.get("reg-email"),
+        password: data.get("reg-password"),
+      });
+      toast.success(res.data.message || "Login Successful", {
+        duration: 4000,
+      });
+      console.log(res);
+    } catch (err) {
+      toast.error("Registration Failed!", {
+        duration: 4000,
+      });
+      console.log(err);
+    }
+  };
+
+  return (
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      <div>
+        <label className="text-sm font-medium text-gray-700" htmlFor="fullname">
+          Full Name
+        </label>
+        <div className="mt-1 relative rounded-md shadow-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <UserIcon />
+          </div>
+          <input
+            type="text"
+            name="fullname"
+            id="fullname"
+            required
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Enter your full name"
+          />
+        </div>
+      </div>
+      <div>
+        <label
+          className="text-sm font-medium text-gray-700"
+          htmlFor="reg-email"
+        >
+          Email Address
+        </label>
+        <div className="mt-1 relative rounded-md shadow-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <EmailIcon />
+          </div>
+          <input
+            type="email"
+            name="reg-email"
+            id="reg-email"
+            required
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Enter your email"
+          />
+        </div>
+      </div>
+      <div>
+        <label
+          className="text-sm font-medium text-gray-700"
+          htmlFor="reg-password"
+        >
+          Password
+        </label>
+        <div className="mt-1 relative rounded-md shadow-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <PasswordIcon />
+          </div>
+          <input
+            type="password"
+            name="reg-password"
+            id="reg-password"
+            required
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Enter your password"
+          />
+        </div>
+      </div>
+      <div>
+        <label
+          className="text-sm font-medium text-gray-700"
+          htmlFor="confirm-password"
+        >
+          Confirm Password
+        </label>
+        <div className="mt-1 relative rounded-md shadow-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <PasswordIcon />
+          </div>
+          <input
+            type="password"
+            name="confirm-password"
+            id="confirm-password"
+            required
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Confirm your password"
+          />
+        </div>
+      </div>
+      <div className="pt-2">
+        <button
+          type="submit"
+          className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300"
+        >
+          <CreateAccountIcon />
+          Create Account
+        </button>
+      </div>
+    </form>
+  );
+};
 
 // --- Main Auth Component ---
 
