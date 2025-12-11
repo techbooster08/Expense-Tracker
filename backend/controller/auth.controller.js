@@ -1,6 +1,6 @@
 import db from "../config/db.config.js";
 import bcryptjs from "bcryptjs";
-import { createToken } from "../helper/jwt.helper.js";
+import { createToken } from "../helpers/jwt.helper.js";
 
 export const register = async (req, res) => {
   try {

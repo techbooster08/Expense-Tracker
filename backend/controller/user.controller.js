@@ -1,5 +1,4 @@
-import jwt from "jsonwebtoken";
-import { decodeToken } from "../helper/jwt.helper.js";
+import { decodeToken } from "../helpers/jwt.helper.js";
 
 export const getUser = async (req, res) => {
   try {
