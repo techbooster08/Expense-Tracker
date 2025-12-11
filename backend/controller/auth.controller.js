@@ -68,15 +68,9 @@ export const login = async (req, res) => {
           { expiresIn: "1h" }
         );
 
-        res.cookie("token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production", // Secure only in production (HTTPS)
-          sameSite: "lax",
-          maxAge: 3600000, // 1 hour
-        });
-
         res.status(200).json({
           message: "Login successful",
+          token: token,
         });
       } else {
         // send response if user entered wrong password
@@ -93,8 +87,3 @@ export const login = async (req, res) => {
   }
 };
 
-// clear cookie from frontend and logout user
-export const logout = async (req, res) => {
-  res.clearCookie("token");
-  res.status(200).json({ message: "Logout successful" });
-};
