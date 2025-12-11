@@ -19,23 +19,17 @@ const LoginForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-
     try {
-      toast.promise(
-        async () => {
-          await api.post("/auth/login", {
+          const res = await api.post("/auth/login", {
             email: data.get("email"),
             password: data.get("password"),
           });
-        },
-        {
-          loading: "Logging in...",
-        }
-      );
-      toast.success("Login Successful", {
-        duration: 4000,
-      });
-      window.location.href = "/home/cashbooks";
+          localStorage.setItem("token", res.data.token);
+          toast.success("Login Successful", {
+            duration: 4000,
+          });
+          window.location.href = "/home/cashbooks";
+      
     } catch (err) {
       toast.error("Login Failed!", {
         duration: 4000,

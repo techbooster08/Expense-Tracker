@@ -4,11 +4,13 @@ import { User, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import api from "@/app/services/api";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 const Avatar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
+  const user = localStorage.getItem("user");
+  const username = user ? JSON.parse(user).full_name : "";
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
@@ -30,10 +32,7 @@ const Avatar = () => {
   }, []);
 
   const habdleLogout = async ()=>{
-    await api.post("/auth/logout");
-    toast.success("Logout Successful", {
-      duration: 4000,
-    });
+    localStorage.clear();
     window.location.href = "/auth";
   }
 
@@ -41,9 +40,9 @@ const Avatar = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={toggleDropdown}
-        className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center"
+        className="w-10 h-10 rounded-full  flex items-center justify-center"
       >
-        <User className="text-gray-500" />
+        <img src={`https://ui-avatars.com/api/?name=${username}&&background=random`} alt="profile" className="rounded-full" />
       </button>
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20">
