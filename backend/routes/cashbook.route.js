@@ -1,13 +1,17 @@
 import {Router} from 'express';
-import { createCashBook, getCashAllBooks } from '../controller/cashbook.controller.js';
+import { createCashBook, deleteCashBook, getCashAllBooks, updateCashBook } from '../controller/cashbook.controller.js';
 import { authMddleware } from '../middleware/auth.middware.js';
 
 const router = Router();
 
 router.use(authMddleware);
 
-router.post('/create', createCashBook);
+router.get('/', getCashAllBooks);
 
-router.get('/all', getCashAllBooks);
+router.post('/', createCashBook);
+
+router.put('/:id', updateCashBook);
+
+router.delete('/:id', deleteCashBook);
 
 export default router;
