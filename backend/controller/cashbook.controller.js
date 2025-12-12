@@ -32,13 +32,19 @@ export const getCashAllBooks = async (req, res) => {
       c.description, 
       c.is_favorited, 
       c.is_archived,
-      COALESCE(SUM(t.amount), 0) AS balance, 
+      COALESCE(SUM(
+          CASE 
+              WHEN t.transaction_type = 'cash_in' THEN t.amount
+              WHEN t.transaction_type = 'cash_out' THEN -t.amount
+              ELSE 0
+          END
+      ), 0) AS balance,
       COUNT(t.id) AS total_transactions
-    FROM cashbooks c
-    LEFT JOIN transactions t ON t.cashbook_id = c.id
-    WHERE c.user_id = $1
-    GROUP BY c.id, c.name, c.is_favorited, c.is_archived
-    ORDER BY c.name`,
+      FROM cashbooks c
+      LEFT JOIN transactions t ON t.cashbook_id = c.id
+      WHERE c.user_id = $1
+      GROUP BY c.id, c.name, c.description, c.is_favorited, c.is_archived
+      ORDER BY c.name;`,
       [user_id]
     );
     if (response.rows.length === 0) {
@@ -56,16 +62,21 @@ export const updateCashBook = async (req, res) => {
   const user_id = req.user.id;
 
   if (!name || !description) {
-    return res.status(400).json({ message: "name & description both fields are required" });
+    return res
+      .status(400)
+      .json({ message: "name & description both fields are required" });
   }
 
   try {
-
-    const response = await db.query("select * from cashbooks where id = $1 and user_id = $2", [id, user_id]);
+    const response = await db.query(
+      "select * from cashbooks where id = $1 and user_id = $2",
+      [id, user_id]
+    );
     if (response.rows.length === 0) {
-      return res.status(404).json({ message: `cashbook with id ${id} does not exist` });
+      return res
+        .status(404)
+        .json({ message: `cashbook with id ${id} does not exist` });
     }
-
 
     await db.query(
       "UPDATE cashbooks SET name = $1, description = $2 WHERE id = $3 AND user_id = $4",
@@ -82,9 +93,14 @@ export const deleteCashBook = async (req, res) => {
   const { id } = req.params;
   const user_id = req.user.id;
   try {
-    const response = await db.query("select * from cashbooks where id = $1 and user_id = $2", [id, user_id]);
+    const response = await db.query(
+      "select * from cashbooks where id = $1 and user_id = $2",
+      [id, user_id]
+    );
     if (response.rows.length === 0) {
-      return res.status(404).json({ message: `cashbook with id ${id} does not exist` });
+      return res
+        .status(404)
+        .json({ message: `cashbook with id ${id} does not exist` });
     }
 
     await db.query("DELETE FROM cashbooks WHERE id = $1 AND user_id = $2", [
