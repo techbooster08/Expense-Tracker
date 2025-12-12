@@ -279,38 +279,6 @@ const Auth: React.FC = () => {
         {/* Conditional Form */}
         {activeTab === "login" ? <LoginForm /> : <RegisterForm />}
 
-        {/* Divider */}
-        <div className="my-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">
-                Or continue with
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Social Logins */}
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            type="button"
-            className="w-full inline-flex justify-center items-center gap-3 py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            <GoogleIcon />
-            Google
-          </button>
-          <button
-            type="button"
-            className="w-full inline-flex justify-center items-center gap-3 py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            <FacebookIcon />
-            Facebook
-          </button>
-        </div>
-
         {/* Terms of Service */}
         {activeTab === "register" && (
           <p className="mt-6 text-xs text-center text-gray-500">
