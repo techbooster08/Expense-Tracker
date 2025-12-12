@@ -1,6 +1,8 @@
 // components/CreateCashbookModal.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import toast from 'react-hot-toast';
+import api from '@/app/services/api';
 
 // Define the props our modal will accept
 interface CreateCashbookModalProps {
@@ -8,6 +10,26 @@ interface CreateCashbookModalProps {
 }
 
 const CreateCashbookModal: React.FC<CreateCashbookModalProps> = ({ onClose }) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+
+  const handleSubmit =async (e: React.FormEvent) => {
+    e.preventDefault();
+    try{
+    await api.post("/cashbook",{
+      name,
+      description
+    });
+    toast.success("Cashbook created successfully");
+    onClose();
+     window.location.reload();
+    }catch(error){
+      console.log(error);
+      toast.error("Something went wrong");
+    }
+   
+  };
+
   return (
     // Backdrop
     <div
@@ -33,7 +55,7 @@ const CreateCashbookModal: React.FC<CreateCashbookModalProps> = ({ onClose }) =>
         </div>
 
         {/* Form */}
-        <form className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label
               htmlFor="cashbookName"
@@ -44,6 +66,9 @@ const CreateCashbookModal: React.FC<CreateCashbookModalProps> = ({ onClose }) =>
             <input
               type="text"
               id="cashbookName"
+              value={name}
+              required
+              onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Personal Expenses, Business, Travel"
               className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-400 focus:border-primary-blue focus:outline-none focus:ring-1 focus:ring-primary-blue"
             />
@@ -53,16 +78,19 @@ const CreateCashbookModal: React.FC<CreateCashbookModalProps> = ({ onClose }) =>
               htmlFor="description"
               className="mb-1 block text-sm font-medium text-gray-700"
             >
-              Description (Optional)
+              Description<span className="text-red-500">*</span>
             </label>
             <textarea
               id="description"
               rows={3}
+              value={description}
+              required
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="What will you track in this cashbook?"
               className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm placeholder-gray-400 focus:border-primary-blue focus:outline-none focus:ring-1 focus:ring-primary-blue"
             />
           </div>
-        </form>
+        
 
         {/* Quick Start Tips */}
         <div className="mt-6 rounded-lg bg-indigo-50/70 p-4">
@@ -91,13 +119,13 @@ const CreateCashbookModal: React.FC<CreateCashbookModalProps> = ({ onClose }) =>
             Cancel
           </button>
           <button
-            onClick={onClose} // In a real app, this would submit the form
             type="submit"
             className="rounded-lg border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-opacity-90"
           >
             Create Book
           </button>
         </div>
+        </form>
       </div>
     </div>
   );

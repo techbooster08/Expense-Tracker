@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CashbookCard from "../../../../components/CashbookCard";
 import {
   Plus,
@@ -15,64 +15,39 @@ import {
 } from "lucide-react";
 import { Inter } from "next/font/google";
 import CreateCashbookModal from "@/components/CreateCashbookModal";
+import api from "@/app/services/api";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-// --- Data for the cards (Corrected) ---
-const cashbookData = [
-  {
-    title: "November Expenses",
-    balance: "₹17,534",
-    transactions: 8,
-    lastActivity: "Coffee Shop - ₹150",
-    time: "1 day ago",
-    icon: <BookOpen size={18} />,
-  },
-  {
-    title: "October Expenses",
-    balance: "₹9,200",
-    transactions: 3,
-    lastActivity: "Internet Bill - ₹800",
-    time: "3 weeks ago",
-    icon: <BookOpen size={18} />,
-  },
-  {
-    title: "Business Expenses",
-    balance: "₹15,950",
-    transactions: 3,
-    lastActivity: "Business Lunch - ₹680",
-    time: "2 days ago",
-    icon: <Briefcase size={18} />,
-    // isFavorite: true, // CORRECTION: Removed this line
-  },
-  {
-    title: "Personal Budget",
-    balance: "₹8,450",
-    transactions: 18,
-    lastActivity: "Grocery Shopping - ₹1200",
-    time: "5 days ago",
-    icon: <Wallet size={18} />,
-  },
-  {
-    title: "Travel Fund",
-    balance: "₹12,000",
-    transactions: 5,
-    lastActivity: "Flight Booking - ₹8500",
-    time: "1 week ago",
-    icon: <Plane size={18} />,
-  },
-];
+const fetchCashbooks = async ()=>{
+      const res = await api.get("/cashbook");
+      return res.data;
+}
+
 
 // --- Page Component ---
 export default function CashbooksPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [cashbooks, setCashbooks] = useState([]);
+  useEffect(()=>{
+    try { 
+     fetchCashbooks().then((data)=>{
+       setCashbooks(data);
+     });
+   
+    } catch (error) {
+      console.log(error);
+    }
+    
+  },[]);
   return (
     <div
-      className={`flex min-h-screen  ${inter.variable} overflow-hidden font-sans mt-15`}
+      className={`flex min-h-screen  ${inter.variable} overflow-hidden font-sans`}
     >
       {/* ===== Sidebar ===== */}
       <aside
-        className={`w-[260px] bg-white p-6 border-r h-screen border-gray-200 hidden md:block`}
+        className={`w-[260px] bg-white p-6 border-r h-screen border-gray-200 hidden pt-20 md:block`}
       >
         <button
           onClick={() => setIsModalOpen(true)}
@@ -111,8 +86,8 @@ export default function CashbooksPage() {
       </aside>
 
       {/* ===== Main Content ===== */}
-      <main className="flex-1 h-full overflow-y-scroll  p-6 md:p-10 relative">
-        <header className="flex justify-between items-center">
+      <main className="flex-1 h-full p-6 md:p-10 relative">
+        <header className="flex justify-between items-center pt-10">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               My Expense Books
@@ -172,15 +147,29 @@ export default function CashbooksPage() {
 
         {/* Cashbooks Grid */}
         <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mt-8">
-          {cashbookData.map((book) => (
+          {cashbooks.length === 0 && (
+            <div className="col-span-full flex flex-col items-center justify-center py-16 px-4 text-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl">
+              <div className="bg-blue-100 p-4 rounded-full mb-4">
+                <Book className="w-8 h-8 text-blue-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                No cashbooks yet
+              </h3>
+              <p className="text-gray-500 mb-6 max-w-sm">
+                Create your first cashbook to start tracking your income and expenses efficiently.
+              </p>
+             
+            </div>
+          )}
+          { cashbooks &&  cashbooks.map((book : any) => (
             <CashbookCard
-              key={book.title}
-              title={book.title}
+              key={book.id}
+              id = {book.id}
+              title={book.name}
+              description = {book.description}
               balance={book.balance}
-              transactions={book.transactions}
-              lastActivity={book.lastActivity}
-              time={book.time}
-              icon={book.icon}
+              transactions={book.total_transactions}
+              isFavorite={book.is_favorited}
             />
           ))}
         </section>
