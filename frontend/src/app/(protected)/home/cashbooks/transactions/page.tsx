@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import api from "@/app/services/api";
+import CreateTransactionModal from "@/components/CreateTransactionModal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -44,19 +45,20 @@ export default function CashbookViewPage() {
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const res = await api.get(`/transaction/${searchParams.get("id")}`);
-        setTransactions(res.data);
-      } catch (error) {
-        console.log("Failed to fetch transactions", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTransactions();
+  const fetchTransactions = React.useCallback(async () => {
+    try {
+      const res = await api.get(`/transaction/${searchParams.get("id")}`);
+      setTransactions(res.data);
+    } catch (error) {
+      console.log("Failed to fetch transactions", error);
+    } finally {
+      setLoading(false);
+    }
   }, [searchParams]);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   // Calculate stats dynamically
   const stats = React.useMemo(() => {
@@ -404,6 +406,25 @@ export default function CashbookViewPage() {
           CASH OUT
         </button>
       </div>
+
+      {/* Transaction Modals */}
+      {isIncomeModalOpen && (
+        <CreateTransactionModal
+          type="cash_in"
+          cashbookId={searchParams.get("id") || ""}
+          onClose={() => setIsIncomeModalOpen(false)}
+          onSuccess={fetchTransactions}
+        />
+      )}
+
+      {isExpenseModalOpen && (
+        <CreateTransactionModal
+          type="cash_out"
+          cashbookId={searchParams.get("id") || ""}
+          onClose={() => setIsExpenseModalOpen(false)}
+          onSuccess={fetchTransactions}
+        />
+      )}
     </div>
   );
 }
