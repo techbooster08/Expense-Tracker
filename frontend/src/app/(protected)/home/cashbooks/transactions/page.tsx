@@ -1,9 +1,9 @@
 // app/cashbook/[id]/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Inter } from "next/font/google";
-import { useSearchParams, usePathname } from "next/navigation";
+import { useSearchParams} from "next/navigation";
 import {
   ArrowLeft,
   Trash2,
@@ -13,109 +13,65 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   Wallet,
+  Loader2,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
+import api from "@/app/services/api";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 // --- Mock Data for Transactions ---
-const transactionsData = [
-  {
-    id: 1,
-    date: "29 Nov, 2024",
-    time: "10:30 AM",
-    details: "Freelance Income",
-    category: "Income",
-    mode: "Online",
-    amount: 25000,
-    balance: 45034,
-    type: "income",
-  },
-  {
-    id: 2,
-    date: "29 Nov, 2024",
-    time: "09:15 AM",
-    details: "Home Rent",
-    category: "Rent",
-    mode: "Cash",
-    amount: -1500,
-    balance: 43534,
-    type: "expense",
-  },
-  {
-    id: 3,
-    date: "28 Nov, 2024",
-    time: "08:45 AM",
-    details: "Petrol",
-    category: "Travel",
-    mode: "Cash",
-    amount: -300,
-    balance: 43234,
-    type: "expense",
-  },
-  {
-    id: 4,
-    date: "28 Nov, 2024",
-    time: "07:20 AM",
-    details: "Groceries",
-    category: "Food & Dining",
-    mode: "Online",
-    amount: -850,
-    balance: 42384,
-    type: "expense",
-  },
-  {
-    id: 5,
-    date: "27 Nov, 2024",
-    time: "08:30 PM",
-    details: "Dinner Party",
-    category: "Entertainment",
-    mode: "Card",
-    amount: -1200,
-    balance: 41184,
-    type: "expense",
-  },
-  {
-    id: 6,
-    date: "27 Nov, 2024",
-    time: "11:05 AM",
-    details: "Electricity Bill",
-    category: "Utilities",
-    mode: "Online",
-    amount: -450,
-    balance: 40734,
-    type: "expense",
-  },
-  {
-    id: 7,
-    date: "26 Nov, 2024",
-    time: "03:15 PM",
-    details: "Medicine",
-    category: "Healthcare",
-    mode: "Cash",
-    amount: -320,
-    balance: 40414,
-    type: "expense",
-  },
-  {
-    id: 8,
-    date: "26 Nov, 2024",
-    time: "09:30 AM",
-    details: "Coffee Shop",
-    category: "Food & Dining",
-    mode: "Card",
-    amount: -150,
-    balance: 40264,
-    type: "expense",
-  },
-];
+interface Transaction {
+  id: string;
+  cashbook_id: string;
+  category_id: string;
+  amount: string;
+  transaction_type: "cash_in" | "cash_out";
+  description: string;
+  payment_mode: string;
+  transaction_datetime: string;
+  category_name: string;
+  balance: string;
+}
 
 // --- Main Page Component ---
 export default function CashbookViewPage() {
   // Simple state for modals (placeholders)
   const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const res = await api.get(`/transaction/${searchParams.get("id")}`);
+        setTransactions(res.data);
+      } catch (error) {
+        console.log("Failed to fetch transactions", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, [searchParams]);
+
+  // Calculate stats dynamically
+  const stats = React.useMemo(() => {
+    let income = 0;
+    let expense = 0;
+    transactions.forEach((tx) => {
+      const amount = parseFloat(tx.amount);
+      if (tx.transaction_type === "cash_in") {
+        income += amount;
+      } else {
+        expense += amount;
+      }
+    });
+    return { income, expense, balance: income - expense };
+  }, [transactions]);
 
   // Helper for formatting currency
   const formatCurrency = (amount: number) => {
@@ -193,7 +149,7 @@ export default function CashbookViewPage() {
                 </div>
                 <div className="flex items-baseline gap-3">
                   <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                    ₹{formatCurrency(20230)}
+                    ₹{formatCurrency(stats.balance)}
                   </h2>
                 </div>
               </div>
@@ -212,7 +168,7 @@ export default function CashbookViewPage() {
                     <p className="text-sm font-medium text-gray-500">Income</p>
                   </div>
                   <p className="text-xl font-semibold text-gray-900">
-                    ₹{formatCurrency(25000)}
+                    ₹{formatCurrency(stats.income)}
                   </p>
                 </div>
 
@@ -227,7 +183,7 @@ export default function CashbookViewPage() {
                     </p>
                   </div>
                   <p className="text-xl font-semibold text-gray-900">
-                    ₹{formatCurrency(4770)}
+                    ₹{formatCurrency(stats.expense)}
                   </p>
                 </div>
               </div>
@@ -239,139 +195,195 @@ export default function CashbookViewPage() {
         <section className="mt-5 md:mt-8">
           <div className="flex justify-between items-baseline">
             <h2 className="text-lg font-semibold text-gray-800">
-              Showing {transactionsData.length} transactions
+              Showing {transactions.length} transactions
             </h2>
-            <span className="text-xs text-gray-500">Book ID: 1</span>
           </div>
 
-          {/* --- DESKTOP TABLE --- */}
-          {/* This table is HIDDEN on mobile (hidden) and SHOWN on medium screens and up (md:table) */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm mt-4 overflow-x-auto hidden md:block">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date & Time
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Details
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Mode
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Balance
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {transactionsData.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{tx.date}</div>
-                      <div className="text-xs text-gray-500">{tx.time}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {tx.details}
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="animate-spin text-blue-600" size={32} />
+            </div>
+          ) : transactions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-lg border border-gray-200 border-dashed mt-4">
+              <div className="bg-gray-50 p-4 rounded-full mb-4">
+                <FileText className="text-gray-400 w-10 h-10" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">
+                No transactions found
+              </h3>
+              <p className="text-gray-500 text-center max-w-sm">
+                Start by adding a new cash in or cash out transaction to this
+                book.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* --- DESKTOP TABLE --- */}
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm mt-4 overflow-x-auto hidden md:block">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date & Time
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Details
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Mode
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Amount
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Balance
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {transactions.map((tx) => (
+                      <tr key={tx.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {new Date(tx.transaction_datetime).toLocaleDateString(
+                              "en-IN",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              }
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(tx.transaction_datetime).toLocaleTimeString(
+                              "en-IN",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {tx.description}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {tx.category_name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              tx.payment_mode === "Online" ||
+                              tx.payment_mode === "Card"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {tx.payment_mode}
+                          </span>
+                        </td>
+                        <td
+                          className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                            tx.transaction_type === "cash_in"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {tx.transaction_type === "cash_in" ? "+" : "-"}
+                          {formatCurrency(Number(tx.amount))}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                          {formatCurrency(Number(tx.balance))}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button className="text-gray-400 hover:text-red-600">
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* --- MOBILE CARD LIST --- */}
+              <div className="space-y-3 mt-3 md:hidden">
+                {transactions.map((tx) => (
+                  <div
+                    key={tx.id}
+                    className="bg-white rounded-lg border border-gray-200 shadow-sm p-3"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <span className="text-base font-semibold text-gray-900">
+                          {tx.description}
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {tx.category}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          tx.mode === "Online" || tx.mode === "Card"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-800"
+                        className={`text-lg font-bold ${
+                          tx.transaction_type === "cash_in"
+                            ? "text-green-600"
+                            : "text-red-600"
                         }`}
                       >
-                        {tx.mode}
+                        {tx.transaction_type === "cash_in" ? "+" : ""}
+                        {formatCurrency(Number(tx.amount))}
                       </span>
-                    </td>
-                    <td
-                      className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                        tx.type === "income" ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      {tx.type === "income" ? "+" : ""}
-                      {formatCurrency(tx.amount)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
-                      {formatCurrency(tx.balance)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button className="text-gray-400 hover:text-red-600">
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
-                  </tr>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+                      <div className="text-xs text-gray-500">
+                        <div>
+                          {new Date(tx.transaction_datetime).toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            }
+                          )}
+                          ,{" "}
+                          {new Date(tx.transaction_datetime).toLocaleTimeString(
+                            "en-IN",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
+                        </div>
+                        <div className="mt-1">
+                          Balance:
+                          <span className="font-medium text-gray-700 ml-1">
+                            {formatCurrency(Number(tx.balance))}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right text-xs">
+                        <div className="text-gray-500">{tx.category_name}</div>
+                        <span
+                          className={`mt-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            tx.payment_mode === "Online" ||
+                            tx.payment_mode === "Card"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {tx.payment_mode}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* --- MOBILE CARD LIST --- */}
-          {/* This list is SHOWN on mobile (block) and HIDDEN on medium screens and up (md:hidden) */}
-          <div className="space-y-3 mt-3 md:hidden">
-            {transactionsData.map((tx) => (
-              <div
-                key={tx.id}
-                className="bg-white rounded-lg border border-gray-200 shadow-sm p-3"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <span className="text-base font-semibold text-gray-900">
-                      {tx.details}
-                    </span>
-                  </div>
-                  <span
-                    className={`text-lg font-bold ${
-                      tx.type === "income" ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {tx.type === "income" ? "+" : ""}
-                    {formatCurrency(tx.amount)}
-                  </span>
-                </div>
-                <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                  <div className="text-xs text-gray-500">
-                    <div>
-                      {tx.date}, {tx.time}
-                    </div>
-                    <div className="mt-1">
-                      Balance:
-                      <span className="font-medium text-gray-700 ml-1">
-                        {formatCurrency(tx.balance)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right text-xs">
-                    <div className="text-gray-500">{tx.category}</div>
-                    <span
-                      className={`mt-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        tx.mode === "Online" || tx.mode === "Card"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {tx.mode}
-                    </span>
-                  </div>
-                </div>
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </section>
       </div>
 
