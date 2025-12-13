@@ -46,7 +46,7 @@ const CashbookCard: React.FC<CashbookCardProps> = ({
       </div>
 
       <h3 className="text-lg font-semibold text-gray-800 mb-6 hover:text-blue-600">
-        <Link href={`/home/cashbooks/${title}?id=${id}`}> {title}</Link>
+        <Link href={`/home/cashbooks/transactions?id=${id}&&title=${title}`}> {title}</Link>
       </h3>
 
       {/* Card Stats */}
