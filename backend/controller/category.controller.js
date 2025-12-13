@@ -27,7 +27,7 @@ export const getUserCategories = async (req, res) => {
   const user = req.user;
 
   try {
-   const response =  await db.query("select id, name from categories where user_id = $1", [user.id]);
+   const response =  await db.query("select id, name from categories where user_id = $1 OR user_id is null", [user.id]);
     res.status(200).json({categories : response.rows,  message: "Categories fetched successfully"});
   } catch (error) {
     console.log(error);
