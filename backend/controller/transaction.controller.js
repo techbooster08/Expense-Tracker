@@ -34,3 +34,45 @@ export const createTransaction = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const getTransactionsByCashbookId = async (req, res) => {
+  const user_id = req.user.id;
+  const { cashbookId } = req.params;
+  try {
+
+    const validation = await db.query(
+      "select * from cashbooks where id = $1 and user_id = $2",
+      [cashbookId, user_id]
+    );
+
+    if  (validation.rows.length === 0) {
+      return res.status(404).json({ message: `cashbook with id ${cashbookId} does not exist }` });
+    }
+
+    const response = await db.query(
+      `SELECT 
+      t.id, 
+      t.cashbook_id, 
+      t.category_id, 
+      t.amount, 
+      t.transaction_type, 
+      t.description, 
+      t.payment_mode, 
+      t.transaction_datetime,
+      c.name AS category_name,
+      SUM(CASE WHEN t.transaction_type = 'cash_in' THEN t.amount ELSE -t.amount END) OVER (ORDER BY t.transaction_datetime ASC, t.id ASC) AS balance
+      FROM transactions t
+      JOIN categories c ON t.category_id = c.id
+      WHERE t.cashbook_id = $1
+      ORDER BY t.transaction_datetime DESC, t.id DESC;`,
+      [cashbookId]
+    );
+    if (response.rows.length === 0) {
+      return res.status(404).json({ message: "No transactions found" });
+    }
+    res.status(200).json(response.rows);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "internal server error" });
+  }
+};
