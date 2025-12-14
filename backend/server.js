@@ -15,11 +15,12 @@ const port = env.PORT;
 // for send & using cookie
 app.use(cookieParser());
 
+
 // for managing Cors policy
 const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:2008',
-
+     env.Allowed_Origin
 ]; 
 
 const corsOptions = {
@@ -45,6 +46,8 @@ db.connect();
 
 app.use("/api/v1", v1Routes);
 
-app.listen(port, () => {
-  console.log("Server is running on port", port);
-});
+// app.listen(port, () => {
+//   console.log("Server is running on port", port);
+// });
+
+export default app;
