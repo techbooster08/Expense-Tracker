@@ -5,7 +5,7 @@ export const createTransaction = async (req, res) => {
 
   try {
     const response = await db.query(
-      "insert into cashbooks(updated_at) values(now()) where id = $1 && user_id = $2 returning *",
+      "UPDATE cashbooks SET updated_at = NOW() WHERE id = $1 AND user_id = $2 RETURNING *",
       [transaction.cashbook_id, req.user.id]
     );
 
@@ -31,7 +31,7 @@ export const createTransaction = async (req, res) => {
         transaction.transaction_datetime,
       ]
     );
-    res.status(201).json({ message: "Cashbook created successfully" });
+    res.status(201).json({ message: "Transaction created successfully" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
