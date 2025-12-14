@@ -46,8 +46,6 @@ db.connect();
 
 app.use("/api/v1", v1Routes);
 
-// app.listen(port, () => {
-//   console.log("Server is running on port", port);
-// });
-
-export default app;
+app.listen(port, () => {
+  console.log("Server is running on port", port);
+});
