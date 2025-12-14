@@ -84,7 +84,7 @@ export default function CashbooksPage() {
       </aside>
 
       {/* ===== Main Content ===== */}
-      <main className="flex-1 h-full p-6 md:p-10 relative">
+      <main className="flex-1 h-full p-6 p-10 relative">
         <header className="flex justify-between items-center pt-10">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
