@@ -35,11 +35,9 @@ export default function CashbooksPage() {
      fetchCashbooks().then((data)=>{
        setCashbooks(data);
      });
-   
     } catch (error) {
       console.log(error);
     }
-    
   },[]);
   return (
     <div

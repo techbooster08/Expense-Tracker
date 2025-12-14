@@ -114,7 +114,6 @@ const RegisterForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    console.log(data);
 
     try {
       const res = await api.post("/auth/register", {
@@ -125,7 +124,6 @@ const RegisterForm: React.FC = () => {
       toast.success(res.data.message || "Login Successful", {
         duration: 4000,
       });
-      console.log(res);
     } catch (err) {
       toast.error("Registration Failed!", {
         duration: 4000,

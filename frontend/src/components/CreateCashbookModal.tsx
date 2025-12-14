@@ -7,9 +7,10 @@ import api from '@/app/services/api';
 // Define the props our modal will accept
 interface CreateCashbookModalProps {
   onClose: () => void; // A function to close the modal
+  onSuccess?: () => void;
 }
 
-const CreateCashbookModal: React.FC<CreateCashbookModalProps> = ({ onClose }) => {
+const CreateCashbookModal: React.FC<CreateCashbookModalProps> = ({ onClose, onSuccess }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
@@ -21,8 +22,10 @@ const CreateCashbookModal: React.FC<CreateCashbookModalProps> = ({ onClose }) =>
       description
     });
     toast.success("Cashbook created successfully");
+    if (onSuccess) {
+      onSuccess();
+    }
     onClose();
-     window.location.reload();
     }catch(error){
       console.log(error);
       toast.error("Something went wrong");

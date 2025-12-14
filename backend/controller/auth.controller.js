@@ -5,7 +5,6 @@ import { createToken } from "../helpers/jwt.helper.js";
 export const register = async (req, res) => {
   try {
     const { full_name, email, password } = req.body;
-    console.log(req.body);
     
     // check is user is already exist in database
     const checkuser = await db.query(
