@@ -4,14 +4,17 @@ export const createTransaction = async (req, res) => {
   const transaction = req.body;
 
   try {
-
     const response = await db.query(
-      "select * from cashbooks where id = $1 and user_id = $2",
+      "insert into cashbooks(updated_at) values(now()) where id = $1 && user_id = $2 returning *",
       [transaction.cashbook_id, req.user.id]
     );
 
     if (response.rows.length === 0) {
-      return res.status(404).json({ message: `cashbook with id ${transaction.cashbook_id} does not exist }` });
+      return res
+        .status(404)
+        .json({
+          message: `cashbook with id ${transaction.cashbook_id} does not exist }`,
+        });
     }
 
     await db.query(
@@ -39,14 +42,15 @@ export const getTransactionsByCashbookId = async (req, res) => {
   const user_id = req.user.id;
   const { cashbookId } = req.params;
   try {
-
     const validation = await db.query(
       "select * from cashbooks where id = $1 and user_id = $2",
       [cashbookId, user_id]
     );
 
-    if  (validation.rows.length === 0) {
-      return res.status(404).json({ message: `cashbook with id ${cashbookId} does not exist }` });
+    if (validation.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: `cashbook with id ${cashbookId} does not exist }` });
     }
 
     const response = await db.query(

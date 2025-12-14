@@ -7,10 +7,6 @@ import {
   Star,
   Archive,
   Search,
-  BookOpen,
-  Briefcase,
-  Wallet,
-  Plane,
   ChevronDown, // Import the down arrow
 } from "lucide-react";
 import { Inter } from "next/font/google";
@@ -28,20 +24,45 @@ const fetchCashbooks = async ()=>{
 // --- Page Component ---
 export default function CashbooksPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("date"); // 'date' | 'name' | 'balance'
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showMobileSortMenu, setShowMobileSortMenu] = useState(false);
 
   const [cashbooks, setCashbooks] = useState([]);
-  useEffect(()=>{
-    try { 
-     fetchCashbooks().then((data)=>{
-       setCashbooks(data);
-     });
+
+  const loadCashbooks = async () => {
+    try {
+      const data = await fetchCashbooks();
+      setCashbooks(data);
     } catch (error) {
       console.log(error);
     }
+  };
+
+  useEffect(() => {
+    loadCashbooks();
   },[]);
+
+  const filteredCashbooks = cashbooks
+    .filter((book: any) =>
+      book.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a: any, b: any) => {
+      if (sortBy === "name") {
+        return a.name.localeCompare(b.name);
+      } else if (sortBy === "balance") {
+        return b.balance - a.balance;
+      }
+      // Default: date (Date Created)
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateB - dateA;
+    });
+
   return (
     <div
-      className={`flex min-h-screen  ${inter.variable} overflow-hidden font-sans`}
+      className={`flex h-screen  ${inter.variable} overflow-hidden font-sans`}
     >
       {/* ===== Sidebar ===== */}
       <aside
@@ -84,7 +105,7 @@ export default function CashbooksPage() {
       </aside>
 
       {/* ===== Main Content ===== */}
-      <main className="flex-1 h-full p-4 relative">
+      <main className="flex-1 h-full p-4 pt-8 relative overflow-y-auto">
         <header className="flex justify-between items-center pt-10">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -104,18 +125,46 @@ export default function CashbooksPage() {
               type="text"
               placeholder="Search cashbooks..."
               className="border-none outline-none text-sm ml-2 w-full bg-transparent"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           {/* CORRECTION:
             Replaced the <select> element with a styled <button>
             to perfectly match your UI design.
           */}
-          <div className="hidden sm:flex items-center text-sm text-gray-500">
+          <div className="hidden sm:flex items-center text-sm text-gray-500 relative">
             <span className="mr-2">Sort by:</span>
-            <button className="flex items-center gap-1 text-sm font-semibold text-gray-900 bg-transparent border-none cursor-pointer">
-              Last Updated
+            <button
+              onClick={() => setShowSortMenu(!showSortMenu)}
+              className="flex items-center gap-1 text-sm font-semibold text-gray-900 bg-transparent border-none cursor-pointer"
+            >
+              {sortBy === "date"
+                ? "Date Created"
+                : sortBy === "name"
+                ? "Name"
+                : "Balance"}
               <ChevronDown size={16} className="text-gray-500" />
             </button>
+
+            {/* Sort Dropdown Menu */}
+            {showSortMenu && (
+              <div className="absolute top-full right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1">
+                {[
+                  { label: "Date Created", value: "date" },
+                  { label: "Name", value: "name" },
+                  { label: "Balance", value: "balance" },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => { setSortBy(option.value); setShowSortMenu(false); }}
+                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${sortBy === option.value ? 'text-blue-600 font-medium' : 'text-gray-700'}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -135,11 +184,35 @@ export default function CashbooksPage() {
               <Archive size={16} /> Archived
             </a>
           </div>
-          <div className="flex items-center text-sm text-gray-500 bg-gray-200 p-2 rounded-lg">
-            <button className="flex items-center gap-1  text-sm font-semibold text-gray-900 border-none cursor-pointer">
-              Last Updated
+          <div className="flex items-center text-sm text-gray-500 bg-gray-200 p-2 rounded-lg relative">
+            <button
+              onClick={() => setShowMobileSortMenu(!showMobileSortMenu)}
+              className="flex items-center gap-1 text-sm font-semibold text-gray-900 bg-transparent border-none cursor-pointer"
+            >
+              {sortBy === "date"
+                ? "Date Created"
+                : sortBy === "name"
+                ? "Name"
+                : "Balance"}
               <ChevronDown size={16} className="text-gray-500" />
             </button>
+            {showMobileSortMenu && (
+              <div className="absolute top-full right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1">
+                {[
+                  { label: "Date Created", value: "date" },
+                  { label: "Name", value: "name" },
+                  { label: "Balance", value: "balance" },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => { setSortBy(option.value); setShowMobileSortMenu(false); }}
+                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${sortBy === option.value ? 'text-blue-600 font-medium' : 'text-gray-700'}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -159,7 +232,7 @@ export default function CashbooksPage() {
              
             </div>
           )}
-          { cashbooks &&  cashbooks.map((book : any) => (
+          { filteredCashbooks && filteredCashbooks.map((book : any) => (
             <CashbookCard
               key={book.id}
               id = {book.id}
@@ -182,7 +255,12 @@ export default function CashbooksPage() {
 
         {/* --- Render Modal --- */}
         {isModalOpen && (
-          <CreateCashbookModal onClose={() => setIsModalOpen(false)} />
+          <CreateCashbookModal
+            onClose={() => {
+              setIsModalOpen(false);
+              loadCashbooks();
+            }}
+          />
         )}
       </main>
     </div>

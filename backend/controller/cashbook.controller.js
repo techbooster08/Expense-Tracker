@@ -32,6 +32,8 @@ export const getCashAllBooks = async (req, res) => {
       c.description, 
       c.is_favorited, 
       c.is_archived,
+      c.created_at,
+      c.updated_at,
       COALESCE(SUM(
           CASE 
               WHEN t.transaction_type = 'cash_in' THEN t.amount
