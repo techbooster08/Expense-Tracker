@@ -1,15 +1,15 @@
+import 'dotenv/config';
 import bodyParser from 'body-parser';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import db from './config/db.config.js';
 import v1Routes from './routes/v1Routes.routes.js';
 
 
-const env = dotenv.config({quiet : true, path : '.env'}).parsed;
 const app = express();
-const port = env.PORT;
+const port = process.env.PORT;
+
 // middlewares
 
 // for send & using cookie
@@ -20,7 +20,7 @@ app.use(cookieParser());
 const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:2008',
-     env.Allowed_Origin
+     process.env.Allowed_Origin
 ]; 
 
 const corsOptions = {
