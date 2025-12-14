@@ -10,7 +10,8 @@ const env = dotenv.config().parsed;
     host : env.DB_host,
     database : env.DB_Name,
     password : env.DB_PASS,
-    port : env.DB_PORT
+    port : env.DB_PORT,
+    ssl: true
  });
 
  export default db;
