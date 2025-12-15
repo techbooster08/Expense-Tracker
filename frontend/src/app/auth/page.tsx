@@ -2,8 +2,6 @@
 import {
   CreateAccountIcon,
   EmailIcon,
-  FacebookIcon,
-  GoogleIcon,
   PasswordIcon,
   SignInIcon,
   UserIcon,
@@ -13,9 +11,12 @@ import Link from "next/link";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import api from "../services/api";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 // --- Form Components ---
 const LoginForm: React.FC = () => {
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
@@ -30,8 +31,8 @@ const LoginForm: React.FC = () => {
           });
           window.location.href = "/home/cashbooks";
       
-    } catch (err) {
-      toast.error("Login Failed!", {
+    } catch (err : any) {
+      toast.error(  err.response.data.message || "Login Failed!", {
         duration: 4000,
       });
       console.log(err);
@@ -67,13 +68,20 @@ const LoginForm: React.FC = () => {
             <PasswordIcon />
           </div>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             name="password"
             id="password"
             required
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             placeholder="Enter your password"
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -110,12 +118,28 @@ const LoginForm: React.FC = () => {
   );
 };
 
-const RegisterForm: React.FC = () => {
+interface RegisterFormProps {
+  switchToLogin: () => void;
+}
+
+const RegisterForm: React.FC<RegisterFormProps> = ({ switchToLogin }) => {
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
+    const password = data.get("reg-password");
+    const confirmPassword = data.get("confirm-password");
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
 
     try {
+      setLoading(true);
       const res = await api.post("/auth/register", {
         full_name: data.get("fullname"),
         email: data.get("reg-email"),
@@ -124,11 +148,14 @@ const RegisterForm: React.FC = () => {
       toast.success(res.data.message || "Login Successful", {
         duration: 4000,
       });
-    } catch (err) {
-      toast.error("Registration Failed!", {
+      switchToLogin();
+    } catch (err:any){
+      toast.error(err.response.data.message || "Registration Failed!", {
         duration: 4000,
       });
       console.log(err);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -185,13 +212,20 @@ const RegisterForm: React.FC = () => {
             <PasswordIcon />
           </div>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             name="reg-password"
             id="reg-password"
             required
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             placeholder="Enter your password"
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
       </div>
       <div>
@@ -206,13 +240,20 @@ const RegisterForm: React.FC = () => {
             <PasswordIcon />
           </div>
           <input
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             name="confirm-password"
             id="confirm-password"
             required
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             placeholder="Confirm your password"
           />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+          >
+            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
       </div>
       <div className="pt-2">
@@ -220,8 +261,17 @@ const RegisterForm: React.FC = () => {
           type="submit"
           className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300"
         >
+          {loading ?
+          <>
+          <Loader2 size={16} className="animate-spin" />
+          Registering..
+          </> :
+          <>
           <CreateAccountIcon />
           Create Account
+          </>
+          }
+          
         </button>
       </div>
     </form>
@@ -275,7 +325,7 @@ const Auth: React.FC = () => {
         </div>
 
         {/* Conditional Form */}
-        {activeTab === "login" ? <LoginForm /> : <RegisterForm />}
+        {activeTab === "login" ? <LoginForm /> : <RegisterForm switchToLogin={() => setActiveTab("login")} />}
 
         {/* Terms of Service */}
         {activeTab === "register" && (

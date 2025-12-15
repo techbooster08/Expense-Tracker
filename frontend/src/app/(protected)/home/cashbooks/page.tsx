@@ -28,6 +28,7 @@ export default function CashbooksPage() {
   const [sortBy, setSortBy] = useState("date"); // 'date' | 'name' | 'balance'
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showMobileSortMenu, setShowMobileSortMenu] = useState(false);
+  const [filterType, setFilterType] = useState("all"); // 'all' | 'favorites' | 'archived'
 
   const [cashbooks, setCashbooks] = useState([]);
 
@@ -48,6 +49,15 @@ export default function CashbooksPage() {
     .filter((book: any) =>
       book.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
+    .filter((book: any) => {
+      if (filterType === "favorites") {
+        return book.is_favorited && !book.is_archived;
+      } else if (filterType === "archived") {
+        return book.is_archived;
+      } else {
+        return !book.is_archived;
+      }
+    })
     .sort((a: any, b: any) => {
       if (sortBy === "name") {
         return a.name.localeCompare(b.name);
@@ -77,28 +87,40 @@ export default function CashbooksPage() {
         <nav className="mt-8">
           <ul className="space-y-2">
             <li>
-              <a
-                href="#"
-                className="flex items-center gap-3 p-3 rounded-lg bg-blue-500 text-white font-medium"
+              <button
+                onClick={() => setFilterType("all")}
+                className={`w-full flex items-center gap-3 p-3 rounded-lg font-medium transition-colors ${
+                  filterType === "all"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-500 hover:bg-gray-100"
+                }`}
               >
                 <Book size={18} /> All Cashbooks
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="#"
-                className="flex items-center gap-3 p-3 rounded-lg text-gray-500 font-medium hover:bg-gray-100"
+              <button
+                onClick={() => setFilterType("favorites")}
+                className={`w-full flex items-center gap-3 p-3 rounded-lg font-medium transition-colors ${
+                  filterType === "favorites"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-500 hover:bg-gray-100"
+                }`}
               >
                 <Star size={18} /> Favorites
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="#"
-                className="flex items-center gap-3 p-3 rounded-lg text-gray-500 font-medium hover:bg-gray-100"
+              <button
+                onClick={() => setFilterType("archived")}
+                className={`w-full flex items-center gap-3 p-3 rounded-lg font-medium transition-colors ${
+                  filterType === "archived"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-500 hover:bg-gray-100"
+                }`}
               >
                 <Archive size={18} /> Archived
-              </a>
+              </button>
             </li>
           </ul>
         </nav>
@@ -129,10 +151,6 @@ export default function CashbooksPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          {/* CORRECTION:
-            Replaced the <select> element with a styled <button>
-            to perfectly match your UI design.
-          */}
           <div className="hidden sm:flex items-center text-sm text-gray-500 relative">
             <span className="mr-2">Sort by:</span>
             <button
@@ -171,30 +189,38 @@ export default function CashbooksPage() {
         {/* Mobile Toolbar */}
         <div className="md:hidden flex justify-between items-center mt-4">
           <div className="flex items-center gap-2">
-            <a
-              href="#"
-              className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 font-medium py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+            <button
+              onClick={() => setFilterType(filterType === "favorites" ? "all" : "favorites")}
+              className={`flex items-center gap-1.5 border font-medium py-1.5 px-2.5 rounded-lg transition-colors text-xs whitespace-nowrap ${
+                filterType === "favorites"
+                  ? "bg-blue-50 border-blue-200 text-blue-600"
+                  : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
             >
-              <Star size={16} /> Favorites
-            </a>
-            <a
-              href="#"
-              className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 font-medium py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+              <Star size={14} className={filterType === "favorites" ? "fill-current" : ""} /> Favorites
+            </button>
+            <button
+              onClick={() => setFilterType(filterType === "archived" ? "all" : "archived")}
+              className={`flex items-center gap-1.5 border font-medium py-1.5 px-2.5 rounded-lg transition-colors text-xs whitespace-nowrap ${
+                filterType === "archived"
+                  ? "bg-blue-50 border-blue-200 text-blue-600"
+                  : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
             >
-              <Archive size={16} /> Archived
-            </a>
+              <Archive size={14} /> Archived
+            </button>
           </div>
-          <div className="flex items-center text-sm text-gray-500 bg-gray-200 p-2 rounded-lg relative">
+          <div className="flex items-center text-xs text-gray-500 bg-gray-100 p-1.5 rounded-lg relative whitespace-nowrap">
             <button
               onClick={() => setShowMobileSortMenu(!showMobileSortMenu)}
-              className="flex items-center gap-1 text-sm font-semibold text-gray-900 bg-transparent border-none cursor-pointer"
+              className="flex items-center gap-1 text-xs font-semibold text-gray-900 bg-transparent border-none cursor-pointer"
             >
               {sortBy === "date"
                 ? "Date Created"
                 : sortBy === "name"
                 ? "Name"
                 : "Balance"}
-              <ChevronDown size={16} className="text-gray-500" />
+              <ChevronDown size={14} className="text-gray-500" />
             </button>
             {showMobileSortMenu && (
               <div className="absolute top-full right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1">
@@ -218,18 +244,35 @@ export default function CashbooksPage() {
 
         {/* Cashbooks Grid */}
         <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mt-8">
-          {cashbooks.length === 0 && (
+          {filteredCashbooks.length === 0 && (
             <div className="col-span-full flex flex-col items-center justify-center py-16 px-4 text-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl">
               <div className="bg-blue-100 p-4 rounded-full mb-4">
-                <Book className="w-8 h-8 text-blue-500" />
+                {filterType === "favorites" ? (
+                  <Star className="w-8 h-8 text-blue-500" />
+                ) : filterType === "archived" ? (
+                  <Archive className="w-8 h-8 text-blue-500" />
+                ) : (
+                  <Book className="w-8 h-8 text-blue-500" />
+                )}
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                No cashbooks yet
+                {filterType === "favorites"
+                  ? "No favorite cashbooks"
+                  : filterType === "archived"
+                  ? "No archived cashbooks"
+                  : searchQuery
+                  ? "No results found"
+                  : "No cashbooks yet"}
               </h3>
               <p className="text-gray-500 mb-6 max-w-sm">
-                Create your first cashbook to start tracking your income and expenses efficiently.
+                {filterType === "favorites"
+                  ? "Mark your important cashbooks as favorites to see them here."
+                  : filterType === "archived"
+                  ? "Cashbooks you archive will appear here."
+                  : searchQuery
+                  ? "Try adjusting your search terms."
+                  : "Create your first cashbook to start tracking your income and expenses efficiently."}
               </p>
-             
             </div>
           )}
           { filteredCashbooks && filteredCashbooks.map((book : any) => (
@@ -241,6 +284,7 @@ export default function CashbooksPage() {
               balance={book.balance}
               transactions={book.total_transactions}
               isFavorite={book.is_favorited}
+              isArchived = {book.is_archived}
             />
           ))}
         </section>
