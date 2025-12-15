@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import api from "@/app/services/api";
 import CreateTransactionModal from "@/components/CreateTransactionModal";
+import toast from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -42,15 +43,21 @@ export default function CashbookViewPage() {
   const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
   const fetchTransactions = React.useCallback(async () => {
     try {
       const res = await api.get(`/transaction/${searchParams.get("id")}`);
-      setTransactions(res.data);
-    } catch (error) {
+      setTransactions(res.data || []);
+    } catch (error: any) {
       console.log("Failed to fetch transactions", error);
+      // If the API returns 404 when no transactions exist, clear the state
+      if (error.response && error.response.status === 404) {
+        setTransactions([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -82,6 +89,26 @@ export default function CashbookViewPage() {
       minimumFractionDigits: 0,
     }).format(amount);
   };
+
+  const promptDelete = (transactionId: string) => {
+    setTransactionToDelete(transactionId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!transactionToDelete) return;
+    try {
+      await api.delete(`/transaction/${transactionToDelete}`);
+      toast.success("Transaction deleted successfully");
+      await fetchTransactions();
+      setIsDeleteModalOpen(false);
+      setTransactionToDelete(null);
+    } catch (error) {
+      toast.error("Failed to delete transaction");
+      console.log("Failed to delete transaction", error);
+    }
+  };
+
 
   return (
     <div className={`min-h-screen bg-light-bg ${inter.variable} font-sans`}>
@@ -306,7 +333,10 @@ export default function CashbookViewPage() {
                           {formatCurrency(Number(tx.balance))}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <button className="text-gray-400 hover:text-red-600">
+                          <button
+                            onClick={() => promptDelete(tx.id)}
+                            className="text-gray-400 hover:text-red-600"
+                          >
                             <Trash2 size={16} />
                           </button>
                         </td>
@@ -329,16 +359,24 @@ export default function CashbookViewPage() {
                           {tx.description}
                         </span>
                       </div>
-                      <span
-                        className={`text-lg font-bold ${
-                          tx.transaction_type === "cash_in"
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {tx.transaction_type === "cash_in" ? "+" : ""}
-                        {formatCurrency(Number(tx.amount))}
-                      </span>
+                      <div className="flex flex-col items-end gap-1">
+                        <span
+                          className={`text-lg font-bold ${
+                            tx.transaction_type === "cash_in"
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {tx.transaction_type === "cash_in" ? "+" : ""}
+                          {formatCurrency(Number(tx.amount))}
+                        </span>
+                        <button
+                          onClick={() => promptDelete(tx.id)}
+                          className="text-gray-400 hover:text-red-600 p-1"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                     <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
                       <div className="text-xs text-gray-500">
@@ -424,6 +462,34 @@ export default function CashbookViewPage() {
           onClose={() => setIsExpenseModalOpen(false)}
           onSuccess={fetchTransactions}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
+              Delete Transaction?
+            </h3>
+            <p className="text-gray-500 text-sm mb-6">
+              Are you sure you want to delete this transaction? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -80,3 +80,26 @@ export const getTransactionsByCashbookId = async (req, res) => {
     res.status(500).json({ message: "internal server error" });
   }
 };
+
+export const deleteTransaction = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const response = await db.query(
+      "select * from transactions where id = $1",
+      [id]
+    );
+    if (response.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: `transaction with id ${id} does not exist` });
+    }
+
+    await db.query("DELETE FROM transactions WHERE id = $1", [
+      id,
+    ]);
+    res.status(200).json({ message: "Transaction deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "internal server error" });
+    console.log(error);
+  }
+};

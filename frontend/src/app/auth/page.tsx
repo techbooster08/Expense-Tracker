@@ -8,7 +8,7 @@ import {
 } from "../../lib/icons";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "../services/api";
 import { Loader2, Eye, EyeOff } from "lucide-react";
@@ -283,6 +283,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ switchToLogin }) => {
 const Auth: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
+  useEffect(()=>{
+    const token = localStorage.getItem("token");
+    if(token){
+      window.location.href = "/home/cashbooks";
+    }
+  },[]);
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col items-center justify-center font-sans text-gray-800 relative ">
       {/* Main Login Card */}
