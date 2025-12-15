@@ -16,11 +16,13 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 // --- Form Components ---
 const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     try {
+          setLoading(true);
           const res = await api.post("/auth/login", {
             email: data.get("email"),
             password: data.get("password"),
@@ -36,6 +38,7 @@ const LoginForm: React.FC = () => {
         duration: 4000,
       });
       console.log(err);
+      setLoading(false);
     }
   };
 
@@ -109,9 +112,19 @@ const LoginForm: React.FC = () => {
         <button
           type="submit"
           className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300"
+          disabled={loading}
         >
-          <SignInIcon />
-          Sign In
+          {loading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Signing In...
+            </>
+          ) : (
+            <>
+              <SignInIcon />
+              Sign In
+            </>
+          )}
         </button>
       </div>
     </form>
