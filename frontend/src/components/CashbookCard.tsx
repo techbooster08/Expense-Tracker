@@ -1,19 +1,28 @@
 // components/CashbookCard.tsx
 import React, { useState } from "react";
 // Import Lucid icons
-import { Star, MoreVertical, BookOpen, Edit, Trash, Archive, ArchiveXIcon, ArchiveRestore } from "lucide-react";
+import {
+  Star,
+  MoreVertical,
+  BookOpen,
+  Edit,
+  Trash,
+  ArchiveXIcon,
+  ArchiveRestore,
+} from "lucide-react";
 import Link from "next/link";
 import api from "@/app/services/api";
 import toast from "react-hot-toast";
 
 interface CashbookCardProps {
-  id : string;
+  id: string;
   title: string;
   description?: string;
   balance: string;
   transactions: number;
   isFavorite?: boolean;
   isArchived?: boolean;
+  onUpdate?: () => void;
 }
 
 const CashbookCard: React.FC<CashbookCardProps> = ({
@@ -24,21 +33,44 @@ const CashbookCard: React.FC<CashbookCardProps> = ({
   isArchived,
   description,
   id,
+  onUpdate,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleDelete = async () => {
-    try{
+    try {
       await api.delete(`/cashbook/${id}`);
       toast.success("Cashbook deleted successfully");
-      window.location.reload(); 
-    }catch(error){
+      if (onUpdate) onUpdate();
+    } catch (error) {
       console.log(error);
-    }finally{
+    } finally {
       setShowDeleteModal(false);
     }
-  }
+  };
+
+  const toggleFavorite = async () => {
+    try {
+      const res: any = await api.patch(`/cashbook/${id}/favorite`);
+      toast.success(res.data.message);
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
+      toast.error(error.response.data.message || "error adding to favorites");
+      console.log(error);
+    }
+  };
+
+  const toggleArchive = async () => {
+    try {
+      const res: any = await api.patch(`/cashbook/${id}/archive`);
+      toast.success(res.data.message);
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
+      toast.error(error.response.data.message || "error adding to archive");
+      console.log(error);
+    }
+  };
 
   return (
     <article className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
@@ -50,7 +82,10 @@ const CashbookCard: React.FC<CashbookCardProps> = ({
 
         {/* Card Actions */}
         <div className="flex gap-1">
-          <button className="bg-transparent border-none text-gray-400 cursor-pointer p-1 hover:text-gray-600">
+          <button
+            className="bg-transparent border-none text-gray-400 cursor-pointer p-1 hover:text-gray-600"
+            onClick={toggleFavorite}
+          >
             {isFavorite ? (
               // Use fill-current and text-yellow-500 for a solid star
               <Star size={16} className="text-yellow-500 fill-yellow-500" />
@@ -67,7 +102,10 @@ const CashbookCard: React.FC<CashbookCardProps> = ({
             </button>
             {showDropdown && (
               <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowDropdown(false)} />
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowDropdown(false)}
+                />
                 <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg z-20 border border-gray-100 py-1">
                   <button
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
@@ -88,10 +126,19 @@ const CashbookCard: React.FC<CashbookCardProps> = ({
                     className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 flex items-center gap-2"
                     onClick={() => {
                       setShowDropdown(false);
-                      setShowDeleteModal(true);
+                      toggleArchive();
                     }}
                   >
-                    <ArchiveRestore size={14} /> Archive
+                    {isArchived ? (
+                      <>
+                        {" "}
+                        <ArchiveXIcon size={14} /> Unarchive{" "}
+                      </>
+                    ) : (
+                      <>
+                        <ArchiveRestore size={14} /> Archive{" "}
+                      </>
+                    )}
                   </button>
                 </div>
               </>
@@ -101,7 +148,10 @@ const CashbookCard: React.FC<CashbookCardProps> = ({
       </div>
 
       <h3 className="text-lg font-semibold text-gray-800 mb-6 hover:text-blue-600">
-        <Link href={`/home/cashbooks/transactions?id=${id}&&title=${title}`}> {title}</Link>
+        <Link href={`/home/cashbooks/transactions?id=${id}&&title=${title}`}>
+          {" "}
+          {title}
+        </Link>
       </h3>
 
       {/* Card Stats */}
@@ -134,9 +184,13 @@ const CashbookCard: React.FC<CashbookCardProps> = ({
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Cashbook?</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
+              Delete Cashbook?
+            </h3>
             <p className="text-gray-500 text-sm mb-6">
-              Are you sure you want to delete <span className="font-semibold">"{title}"</span>? This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">"{title}"</span>? This action
+              cannot be undone.
             </p>
             <div className="flex gap-3 justify-end">
               <button

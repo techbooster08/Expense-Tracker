@@ -285,6 +285,7 @@ export default function CashbooksPage() {
               transactions={book.total_transactions}
               isFavorite={book.is_favorited}
               isArchived = {book.is_archived}
+              onUpdate={loadCashbooks}
             />
           ))}
         </section>

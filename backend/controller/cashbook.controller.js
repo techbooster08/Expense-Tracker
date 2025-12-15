@@ -115,3 +115,60 @@ export const deleteCashBook = async (req, res) => {
     console.log(error);
   }
 };
+
+
+export const toggleFavorite = async (req, res) => {
+  const { id } = req.params;
+  const user_id = req.user.id;
+  try {
+    const response = await db.query(
+      `select
+      *
+      from cashbooks
+      where id = $1 and user_id = $2`,
+      [id, user_id]
+    );
+    if (response.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: `cashbook with id ${id} does not exist` });
+    }
+    await db.query(
+      "UPDATE cashbooks SET is_favorited = NOT is_favorited WHERE id = $1 AND user_id = $2",
+      [id, user_id]
+    );
+    res.status(201).json({ message: "Cashbook updated SuccessFully" });
+  } catch (error) {
+    res.status(500).json({ message: "internal server error" });
+    console.log(error);
+  }
+}
+
+
+
+export const toggleArchive = async (req, res) => {
+  const { id } = req.params;
+  const user_id = req.user.id;
+  try {
+    const response = await db.query(
+      `select
+      *
+      from cashbooks
+      where id = $1 and user_id = $2`,
+      [id, user_id]
+    );
+    if (response.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: `cashbook with id ${id} does not exist` });
+    }
+    await db.query(
+      "UPDATE cashbooks SET is_archived = NOT is_archived WHERE id = $1 AND user_id = $2",
+      [id, user_id]
+    );
+    res.status(201).json({ message: "Cashbook updated SuccessFully" });
+  } catch (error) {
+    res.status(500).json({ message: "internal server error" });
+    console.log(error);
+  }
+}
