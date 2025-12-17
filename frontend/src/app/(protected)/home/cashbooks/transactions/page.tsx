@@ -15,6 +15,7 @@ import {
   Wallet,
   Loader2,
   FileText,
+  Filter,
 } from "lucide-react";
 import Link from "next/link";
 import api from "@/app/services/api";
@@ -46,6 +47,9 @@ export default function CashbookViewPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | "cash_in" | "cash_out">("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const searchParams = useSearchParams();
 
   const fetchTransactions = React.useCallback(async () => {
@@ -67,11 +71,42 @@ export default function CashbookViewPage() {
     fetchTransactions();
   }, [fetchTransactions]);
 
+  const uniqueCategories = React.useMemo(() => {
+    const categories = new Set(transactions.map((tx) => tx.category_name).filter(Boolean));
+    return Array.from(categories).sort();
+  }, [transactions]);
+
+  const filteredTransactions = React.useMemo(() => {
+    let result = transactions;
+
+    // Search Filter
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      result = result.filter((tx) =>
+        tx.description.toLowerCase().includes(lowerQuery) ||
+        tx.amount.toString().includes(lowerQuery) ||
+        tx.category_name.toLowerCase().includes(lowerQuery)
+      );
+    }
+
+    // Type Filter
+    if (typeFilter !== "all") {
+      result = result.filter((tx) => tx.transaction_type === typeFilter);
+    }
+
+    // Category Filter
+    if (categoryFilter !== "all") {
+      result = result.filter((tx) => tx.category_name === categoryFilter);
+    }
+
+    return result;
+  }, [transactions, searchQuery, typeFilter, categoryFilter]);
+
   // Calculate stats dynamically
   const stats = React.useMemo(() => {
     let income = 0;
     let expense = 0;
-    transactions.forEach((tx) => {
+    filteredTransactions.forEach((tx) => {
       const amount = parseFloat(tx.amount);
       if (tx.transaction_type === "cash_in") {
         income += amount;
@@ -80,7 +115,7 @@ export default function CashbookViewPage() {
       }
     });
     return { income, expense, balance: income - expense };
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // Helper for formatting currency
   const formatCurrency = (amount: number) => {
@@ -135,30 +170,72 @@ export default function CashbookViewPage() {
         </header>
 
         {/* Search & Actions */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-4 md:mt-6">
-          <div className="flex items-center bg-white border border-gray-300 rounded-lg py-2 px-3 w-full md:w-auto md:min-w-[320px]">
-            <Search className="text-gray-400" size={16} />
-            <input
-              type="text"
-              placeholder="Search by description, amount or category"
-              className="border-none outline-none text-sm ml-2 w-full bg-transparent"
-            />
-          </div>
-          <div className="hidden md:flex items-center gap-3">
-            <button
-              onClick={() => setIsIncomeModalOpen(true)}
-              className="flex-1 md:flex-auto flex items-center justify-center gap-2 text-sm font-semibold text-green-600 bg-green-100/70 border border-green-200 rounded-lg py-2 px-4 hover:bg-green-100"
-            >
-              <Plus size={16} />
-              CASH IN
-            </button>
-            <button
-              onClick={() => setIsExpenseModalOpen(true)}
-              className="flex-1 md:flex-auto flex items-center justify-center gap-2 text-sm font-semibold text-red-600 bg-red-100/70 border border-red-200 rounded-lg py-2 px-4 hover:bg-red-100"
-            >
-              <Minus size={16} />
-              CASH OUT
-            </button>
+        <div className="flex flex-col gap-4 mt-4 md:mt-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+              <div className="flex items-center bg-white border border-gray-300 rounded-lg py-2 px-3 w-full md:w-80">
+                <Search className="text-gray-400" size={16} />
+                <input
+                  type="text"
+                  placeholder="Search transactions..."
+                  className="border-none outline-none text-sm ml-2 w-full bg-transparent"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <div className="relative flex-1 md:w-40">
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value as any)}
+                    className="w-full appearance-none bg-white border border-gray-300 text-gray-700 py-2 px-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="cash_in">Cash In</option>
+                    <option value="cash_out">Cash Out</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                    <Filter size={14} />
+                  </div>
+                </div>
+
+                <div className="relative flex-1 md:w-40">
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    className="w-full appearance-none bg-white border border-gray-300 text-gray-700 py-2 px-3 pr-8 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All Categories</option>
+                    {uniqueCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                    <Filter size={14} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="hidden md:flex items-center gap-3">
+              <button
+                onClick={() => setIsIncomeModalOpen(true)}
+                className="flex-1 md:flex-auto flex items-center justify-center gap-2 text-sm font-semibold text-green-600 bg-green-100/70 border border-green-200 rounded-lg py-2 px-4 hover:bg-green-100"
+              >
+                <Plus size={16} />
+                CASH IN
+              </button>
+              <button
+                onClick={() => setIsExpenseModalOpen(true)}
+                className="flex-1 md:flex-auto flex items-center justify-center gap-2 text-sm font-semibold text-red-600 bg-red-100/70 border border-red-200 rounded-lg py-2 px-4 hover:bg-red-100"
+              >
+                <Minus size={16} />
+                CASH OUT
+              </button>
+            </div>
           </div>
         </div>
 
@@ -224,7 +301,7 @@ export default function CashbookViewPage() {
         <section className="mt-5 md:mt-8">
           <div className="flex justify-between items-baseline">
             <h2 className="text-lg font-semibold text-gray-800">
-              Showing {transactions.length} transactions
+              Showing {filteredTransactions.length} transactions
             </h2>
           </div>
 
@@ -243,6 +320,12 @@ export default function CashbookViewPage() {
               <p className="text-gray-500 text-center max-w-sm">
                 Start by adding a new cash in or cash out transaction to this
                 book.
+              </p>
+            </div>
+          ) : filteredTransactions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-lg border border-gray-200 border-dashed mt-4">
+              <p className="text-gray-500 text-center">
+                No transactions found matching your filters.
               </p>
             </div>
           ) : (
@@ -276,7 +359,7 @@ export default function CashbookViewPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {transactions.map((tx) => (
+                    {filteredTransactions.map((tx) => (
                       <tr key={tx.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
@@ -348,7 +431,7 @@ export default function CashbookViewPage() {
 
               {/* --- MOBILE CARD LIST --- */}
               <div className="space-y-3 mt-3 md:hidden">
-                {transactions.map((tx) => (
+                {filteredTransactions.map((tx) => (
                   <div
                     key={tx.id}
                     className="bg-white rounded-lg border border-gray-200 shadow-sm p-3"
