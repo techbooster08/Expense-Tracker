@@ -7,18 +7,15 @@ import {
   Car,
   CheckCircle,
   CircleHelp,
-  Facebook,
-  Github,
+  Github, 
   HomeIcon,
   Instagram,
   Linkedin,
   Lock,
   LogIn,
-  Mail,
   Menu,
   Play,
   Plus,
-  Twitter,
   UtensilsCrossed,
   X,
 } from "lucide-react";
@@ -157,7 +154,7 @@ export default function Home() {
           className="relative pt-25 pb-15  overflow-hidden bg-gradient-to-b from-blue-50 via-white to-white"
           id="home"
         >
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="container mx-auto px-6  relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
               {/* Left Content */}
               <div className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0">
@@ -165,7 +162,7 @@ export default function Home() {
                   <span className="flex h-2 w-2 rounded-full bg-blue-600 mr-2"></span>
                   New: Smart Budgeting Features
                 </div>
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 leading-[1.15]">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-sans tracking-tight text-gray-900 leading-[1.15]">
                   Take Control of Your <br className="hidden lg:block" />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
                     Financial Future
@@ -315,7 +312,7 @@ export default function Home() {
 
         {/* features Section */}
         <section className="bg-gray-50 py-10" id="features">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto px-4 sm:px-6">
             <div className="text-center max-w-3xl mx-auto">
               <h2 className="text-3xl sm:text-4xl font-bold text-shadow-2xs text-gray-900">
                 Everything You Need for Financial Management
@@ -351,7 +348,7 @@ export default function Home() {
 
         {/* How it works Section */}
         <section className="bg-gray-50 py-10" id="how-it-works">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto px-4 sm:px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
                 How It Works
@@ -382,7 +379,7 @@ export default function Home() {
 
         {/* Software in Action Section*/}
         <section className="bg-white py-10 overflow-hidden" id="resources">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="container mx-auto px-4 sm:px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <div className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-sm font-medium text-blue-600 mb-4">
                 <span className="flex h-2 w-2 rounded-full bg-blue-600 mr-2"></span>
@@ -445,7 +442,7 @@ export default function Home() {
              </svg>
           </div>
           
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <div className="container mx-auto px-4 sm:px-6  relative z-10 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6 tracking-tight">
               Ready to Transform Your Finances?
             </h2>
