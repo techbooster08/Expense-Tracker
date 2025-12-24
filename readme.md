@@ -38,7 +38,8 @@ A full-stack **Expense Tracker web application** that helps users manage persona
 
 ## 🌐 Live Demo
 
-🔗 **Live Application:** https://expense-tracker-nu-three-72.vercel.app/ 
+🔗 **Live Application:** https://expense-tracker-nu-three-72.vercel.app/
+
 💻 **GitHub Repository:** https://github.com/techbooster08/Expense-Tracker
 
 ---
